@@ -3,6 +3,7 @@ import sys.Http;
 import flixel.FlxObject;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
+import StringTools;
 
 var adminStrings:Dynamic = [
 	[
@@ -197,6 +198,10 @@ function onUpdatePost(elapsed:Float) {
 						freeCam.x += 10;
 					if (FlxG.keys.pressed.K)
 						freeCam.y += 10;
+
+				case "Opponent Play":
+					boyfriend.holdTimer = -1000;
+					dad.holdTimer = -1000;
 			}
 		} else {
 			switch (array[0]) { // this is for turning them off
@@ -243,6 +248,21 @@ function goodNoteHitPost(daNote) {
 					var singAnims = ['singLEFT', 'singDOWN', 'singUP', 'singRIGHT'];
 
 					game.dad.playAnim(singAnims[daNote.noteData]);
+			}
+		}
+	}
+}
+
+function onBeatHit() {
+	for (array in buttons) {
+		if (array[1].antialiasing) {
+			switch (array[0]) { // this is for thingies that occur when the beat hits
+				case "Opponent Play":
+					if (game.dad.animation.finished)
+						game.dad.dance();
+
+					if (game.boyfriend.animation.finished)
+						game.boyfriend.dance();
 			}
 		}
 	}
