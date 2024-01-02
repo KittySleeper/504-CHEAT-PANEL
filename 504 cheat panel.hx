@@ -3,7 +3,6 @@ import sys.Http;
 import flixel.FlxObject;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
-import StringTools;
 
 var adminStrings:Dynamic = [
 	[
@@ -17,22 +16,33 @@ var adminStrings:Dynamic = [
 	],
 	[
 		["Break Notes", "Just Makes The Notes Weird."],
+		["Spinney Notes", "Stop Taking Lsd."],
 		["God Mode", "No Death."],
 		["More Health", "Gives Some Health."],
 		["Less Health", "Takes Away Some Health."],
 		["Turn Off HP Colors", "I Guess You Can Debug?"],
-		["Opponent Play", "Play As Dad."],
-		["Placeholder", "Placeholder."]
+		["Opponent Play", "Play As Dad."]
 	],
 	[
 		["Free Cam", "Control Camera With IJKL."],
-		["Placeholder", "Placeholder."],
-		["Placeholder", "Placeholder."],
+		["Zoom Cam In", "Zooms Cam In."],
+		["Zoom Cam Out", "Zooms Cam Out."],
 		["Placeholder", "Placeholder."],
 		["Placeholder", "Placeholder."],
 		["Placeholder", "Placeholder."],
 		["Placeholder", "Placeholder."]
 	]
+];
+
+var blackList = [
+	"UPDATE",
+	"Speed Up",
+	"Slow Down",
+	"Rgb Boyfriend",
+	"More Health",
+	"Less Health"
+	"Zoom Cam In",
+	"Zoom Cam Out"
 ];
 
 // shit for the panel
@@ -68,19 +78,13 @@ function onCreatePost() {
 
 	http.onData = function(data:String) {
 		if (Std.parseFloat(data) > Std.parseFloat(version))
-			adminStrings = [
-				[
-				["UPDATE", "CLICK HERE TO UPDATE TO " + data]
-				]
-			];
+			adminStrings = [[["UPDATE", "CLICK HERE TO UPDATE TO " + data]]];
 
-			if (Std.parseFloat(data) < Std.parseFloat(version))
-				version = version + " BETA";
+		if (Std.parseFloat(data) < Std.parseFloat(version))
+			version = version + " BETA";
 	}
 
-	http.onError = function(error) {
-		debugPrint('error: $error', 0xffee0000);
-	}
+	http.onError = function(error){debugPrint('error: $error', 0xffee0000);}
 
 	http.request();
 
@@ -90,7 +94,7 @@ function onCreatePost() {
 function onUpdatePost(elapsed:Float) {
 	for (array in buttons) {
 		if (FlxG.mouse.overlaps(array[1], camPanel) && FlxG.mouse.justPressed) {
-			if (array[0] != "Speed Up" && array[0] != "Slow Down" && array[0] != "Rgb Boyfriend" && array[0] != "More Health" && array[0] != "Less Health")
+			if (!blackList.contains(array[0]))
 				array[1].antialiasing = !array[1].antialiasing;
 
 			switch (array[0]) { // this is for when you only click things
@@ -98,15 +102,11 @@ function onUpdatePost(elapsed:Float) {
 					FlxG.resetState();
 					var http = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/main/504%20cheat%20panel.hx");
 
-					http.onData = function(data:String) {
-						File.saveBytes('./' + this, Bytes.ofString(data));
-					}
-				
-					http.onError = function(error) {
-						debugPrint('error: $error', 0xffee0000);
-					}
-				
-					http.request();				
+					http.onData = function(data:String){File.saveBytes('./' + this, Bytes.ofString(data));}
+
+					http.onError = function(error){debugPrint('error: $error', 0xffee0000);}
+
+					http.request();
 
 				case "Quit Game":
 					Sys.exit(1);
@@ -171,6 +171,12 @@ function onUpdatePost(elapsed:Float) {
 						FlxG.camera.follow(camFollow, "LOCKON", 0);
 
 					FlxG.camera.snapToTarget();
+
+				case "Zoom Cam In":
+					game.defaultCamZoom += 0.2;
+
+				case "Zoom Cam Out":
+					game.defaultCamZoom -= 0.2;
 			}
 		}
 
@@ -178,6 +184,13 @@ function onUpdatePost(elapsed:Float) {
 			switch (array[0]) { // this is for things that will occur every second
 				case "God Mode":
 					game.health = 2;
+
+				case "Spinney Notes":
+					for (strum in game.playerStrums.members)
+						strum.angle += 1.5;
+
+					for (strum in game.opponentStrums.members)
+						strum.angle += 1.5;
 
 				case "Rainbow Notes":
 					for (note in game.unspawnNotes) {
