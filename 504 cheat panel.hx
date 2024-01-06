@@ -119,11 +119,14 @@ function onUpdatePost(elapsed:Float) {
 					game.cpuControlled = array[1].antialiasing;
 					game.botplayTxt.visible = array[1].antialiasing;
 
-				case "Speed Up":
-					game.playbackRate += 0.1;
-
-				case "Slow Down":
-					game.playbackRate -= 0.1;
+				case "Speed Up": 
+					if (game.playbackRate <= 3.0) { 
+						game.playbackRate += 0.1; 
+					} 
+				case "Slow Down": 
+					if (game.playbackRate >= 0.5) { 
+						game.playbackRate -= 0.1; 
+					}
 
 				case "Stop Time":
 					if (array[1].antialiasing)
