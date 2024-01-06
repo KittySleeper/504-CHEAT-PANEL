@@ -29,20 +29,12 @@ var adminStrings:Dynamic = [
 		["Zoom Cam Out", "Zooms Cam Out."],
 		["Placeholder", "Placeholder."],
 		["Placeholder", "Placeholder."],
-		["Placeholder", "Placeholder."],
 		["Placeholder", "Placeholder."]
 	]
 ];
 
 var blackList = [
-	"UPDATE",
-	"Speed Up",
-	"Slow Down",
-	"Rgb Boyfriend",
-	"More Health",
-	"Less Health"
-	"Zoom Cam In",
-	"Zoom Cam Out"
+	"UPDATE", "DONT UPDATE", "Speed Up", "Slow Down", "Rgb Boyfriend", "Randomize Notes", "More Health", "Less Health" "Zoom Cam In", "Zoom Cam Out"
 ];
 
 // shit for the panel
@@ -77,14 +69,33 @@ function onCreatePost() {
 	var http = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/main/version.txt");
 
 	http.onData = function(data:String) {
-		if (Std.parseFloat(data) > Std.parseFloat(version))
-			adminStrings = [[["UPDATE", "CLICK HERE TO UPDATE TO " + data]]];
+		if (Std.parseFloat(data) > Std.parseFloat(version)) {
+			if (FlxG.save.data.update == null)
+				FlxG.save.data.update = true;
+
+			if (FlxG.save.data.update == true)
+				adminStrings = [[["UPDATE", "UPDATE TO " + data], ["DONT UPDATE", "KEEP " + version]]];
+			else
+				adminStrings.push([
+					["UPDATE", "UPDATE TO " + data],
+					["UPDATE", "UPDATE TO " + data],
+					["UPDATE", "UPDATE TO " + data],
+					["UPDATE", "UPDATE TO " + data],
+					["UPDATE", "UPDATE TO " + data],
+					["UPDATE", "UPDATE TO " + data],
+					["UPDATE", "UPDATE TO " + data]
+				]);
+
+			version += " OUTDATED";
+		}
 
 		if (Std.parseFloat(data) < Std.parseFloat(version))
-			version = version + " BETA";
+			version += " BETA";
 	}
 
-	http.onError = function(error){debugPrint('error: $error', 0xffee0000);}
+	http.onError = function(error) {
+		debugPrint('error: $error', 0xffee0000);
+	}
 
 	http.request();
 
@@ -99,14 +110,25 @@ function onUpdatePost(elapsed:Float) {
 
 			switch (array[0]) { // this is for when you only click things
 				case "UPDATE":
-					FlxG.resetState();
 					var http = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/main/504%20cheat%20panel.hx");
 
-					http.onData = function(data:String){File.saveBytes('./' + this, Bytes.ofString(data));}
+					http.onData = function(data:String) {
+						File.saveBytes('./' + this, Bytes.ofString(data));
+					}
 
-					http.onError = function(error){debugPrint('error: $error', 0xffee0000);}
+					http.onError = function(error) {
+						debugPrint('error: $error', 0xffee0000);
+					}
 
 					http.request();
+
+					FlxG.save.data.update = true;
+
+					FlxG.resetState();
+
+				case "DONT UPDATE":
+					FlxG.save.data.update = false;
+					FlxG.resetState();
 
 				case "Quit Game":
 					Sys.exit(1);
@@ -119,13 +141,14 @@ function onUpdatePost(elapsed:Float) {
 					game.cpuControlled = array[1].antialiasing;
 					game.botplayTxt.visible = array[1].antialiasing;
 
-				case "Speed Up": 
-					if (game.playbackRate <= 3.0) { 
-						game.playbackRate += 0.1; 
-					} 
-				case "Slow Down": 
-					if (game.playbackRate >= 0.5) { 
-						game.playbackRate -= 0.1; 
+				case "Speed Up":
+					if (game.playbackRate <= 3.0) {
+						game.playbackRate += 0.1;
+					}
+
+				case "Slow Down":
+					if (game.playbackRate >= 0.5) {
+						game.playbackRate -= 0.1;
 					}
 
 				case "Stop Time":
@@ -154,6 +177,15 @@ function onUpdatePost(elapsed:Float) {
 						note.scale.set(0.8, 0.8);
 					}
 
+				case "Spinney Notes":
+					if (!array[1].antialiasing) {
+						for (strum in game.playerStrums.members)
+							strum.angle = 0;
+
+						for (strum in game.opponentStrums.members)
+							strum.angle = 0;
+					}
+
 				case "More Health":
 					game.health += 0.2;
 
@@ -177,9 +209,11 @@ function onUpdatePost(elapsed:Float) {
 
 				case "Zoom Cam In":
 					game.defaultCamZoom += 0.2;
+					FlxG.camera.zoom += 0.2;
 
 				case "Zoom Cam Out":
 					game.defaultCamZoom -= 0.2;
+					FlxG.camera.zoom -= 0.2;
 			}
 		}
 
