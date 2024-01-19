@@ -1,6 +1,6 @@
-white
-black
-yellow
-red
-rainbow
+white-
+black-
+yellow-
+red-
+rainbow-
 test
