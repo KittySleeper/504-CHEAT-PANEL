@@ -1,0 +1,6 @@
+white
+black
+yellow
+red
+rainbow
+test
