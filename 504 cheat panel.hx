@@ -1,9 +1,16 @@
+import openfl.display.BitmapData;
 import haxe.io.Bytes;
 import sys.Http;
 import flixel.FlxObject;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
+import StringTools;
 
+/**
+	context for this save data code here uhm IT KINDA NEEDS TO BE HERE-
+ */
+if (FlxG.save.data.theme == null)
+	FlxG.save.data.theme = 0;
 var adminStrings:Dynamic = [
 	[
 		["Quit Game", "Closes Psych Engine."],
@@ -11,8 +18,7 @@ var adminStrings:Dynamic = [
 		["Botplay", "Botplay... Thats It."],
 		["Speed Up", "Makes Song Faster."],
 		["Slow Down", "Makes Song Slower."],
-		["Stop Time", "Kinda Stops Time."],
-		["Rgb Boyfriend", "Gay Bf. (kinda broke)"]
+		["Stop Time", "Kinda Stops Time."]
 	],
 	[
 		["Break Notes", "Just Makes The Notes Weird."],
@@ -21,21 +27,24 @@ var adminStrings:Dynamic = [
 		["More Health", "Gives Some Health."],
 		["Less Health", "Takes Away Some Health."],
 		["Turn Off HP Colors", "I Guess You Can Debug?"],
-		["Opponent Play", "Play As Dad."]
+		["Rgb Boyfriend", "Gay Bf. (kinda broke)"]
 	],
 	[
 		["Free Cam", "Control Camera With IJKL."],
 		["Zoom Cam In", "Zooms Cam In."],
 		["Zoom Cam Out", "Zooms Cam Out."],
-		["Placeholder", "Placeholder."],
+		["Opponent Play", "Play As Dad."],
 		["Placeholder", "Placeholder."],
 		["Placeholder", "Placeholder."]
 	]
 ];
 
 var blackList = [
-	"UPDATE", "DONT UPDATE", "Speed Up", "Slow Down", "Rgb Boyfriend", "Randomize Notes", "More Health", "Less Health" "Zoom Cam In", "Zoom Cam Out"
+	"UPDATE", "DONT UPDATE", "Speed Up", "Slow Down", "Change Theme", "Rgb Boyfriend", "Randomize Notes", "More Health", "Less Health" "Zoom Cam In",
+	"Zoom Cam Out"
 ];
+
+var themes = [];
 
 // shit for the panel
 var camPanel:FlxCamera;
@@ -48,10 +57,11 @@ var buttons:Array<Array<Dynamic>> = [];
 var texts:Array<Array<Dynamic>> = [];
 var curButton = 0; // i have to do it like this okay :/
 var curPage = 0;
-//
 
+//
 // shit for mods in the panel
 var freeCam:FlxObject;
+
 //
 
 function onCreatePost() {
@@ -66,7 +76,7 @@ function onCreatePost() {
 	freeCam = new FlxObject(0, 0, 1, 1);
 	freeCam.setPosition(game.camFollow.x, game.camFollow.y);
 
-	var http = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/main/version.txt");
+	var http = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/DONT-DOWNLOAD-THIS-IS-USED-FOR-HTTP-THINGS-ONLY/version.txt");
 
 	http.onData = function(data:String) {
 		if (Std.parseFloat(data) > Std.parseFloat(version)) {
@@ -99,6 +109,24 @@ function onCreatePost() {
 
 	http.request();
 
+	var http2 = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/DONT-DOWNLOAD-THIS-IS-USED-FOR-HTTP-THINGS-ONLY/themes/list.txt");
+
+	http2.onData = function(data:String) {
+		themes = data.split("-");
+
+		themes.remove(themes[themes.length]);
+
+		adminStrings[0][6] = ["Change Theme", "Change your theme " + themes[FlxG.save.data.theme]];
+	}
+
+	http2.onError = function(error) {
+		debugPrint('error: $error', 0xffee0000);
+
+		adminStrings.remove("Change Theme");
+	}
+
+	http2.request();
+
 	regenMenu();
 }
 
@@ -110,7 +138,7 @@ function onUpdatePost(elapsed:Float) {
 
 			switch (array[0]) { // this is for when you only click things
 				case "UPDATE":
-					var http = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/main/504%20cheat%20panel.hx");
+					var http = new Http("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/DONT-DOWNLOAD-THIS-IS-USED-FOR-HTTP-THINGS-ONLY/menu.txt");
 
 					http.onData = function(data:String) {
 						File.saveBytes('./' + this, Bytes.ofString(data));
@@ -156,6 +184,15 @@ function onUpdatePost(elapsed:Float) {
 						game.playbackRate = 0;
 					else
 						game.playbackRate = 1;
+
+				case "Change Theme":
+					FlxG.save.data.theme++;
+					if (Std.int(FlxG.save.data.theme) > themes.length - 1)
+						FlxG.save.data.theme = 0;
+
+					adminStrings[0][6] = ["Change Theme", "Change your theme " + themes[FlxG.save.data.theme]];
+
+					regenMenu();
 
 				case "Rgb Boyfriend":
 					rgbRecolor(game.boyfriend);
@@ -337,7 +374,8 @@ function regenMenu() {
 		if (killShit != null)
 			killShit.kill();
 
-	bg = new FlxSprite().makeGraphic(300, 400);
+	bg = new FlxSprite() /*.makeGraphic(300, 400)*/;
+	loadBGTheme(themes[FlxG.save.data.theme]);
 	bg.cameras = [camPanel];
 	add(bg);
 
@@ -354,7 +392,7 @@ function regenMenu() {
 	buttonR.cameras = [camPanel];
 	add(buttonR);
 
-	rgbRecolor(bg);
+	// rgbRecolor(bg);
 
 	for (button in buttons) {
 		button[1].destroy();
@@ -391,5 +429,31 @@ function regenMenu() {
 
 		buttons.push([array[0], button]);
 		texts.push([array[0], text, text2]);
+	}
+}
+
+function loadBGTheme(theme:String) {
+	switch (theme) {
+		case "white", "black", "yellow", "red", "rainbow":
+			var color = 0xFFffffff;
+
+			switch(theme) {
+				case "black":
+					color = 0xff000000;
+				case "yellow":
+					color = 0xfffbff00;
+				case "red":
+					color = 0xffff0000;
+			}
+
+			bg.makeGraphic(300, 400, color);
+
+			if (theme == "rainbow")
+				rgbRecolor(bg);
+		default:
+			BitmapData.loadFromFile("https://raw.githubusercontent.com/504brandon/504-CHEAT-PANEL/DONT-DOWNLOAD-THIS-IS-USED-FOR-HTTP-THINGS-ONLY/themes/" + theme + ".png")
+				.onComplete(function(bitmap:BitmapData) {
+					bg.loadGraphic(bitmap);
+				});
 	}
 }
